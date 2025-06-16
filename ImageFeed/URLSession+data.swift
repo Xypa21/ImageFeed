@@ -30,6 +30,7 @@ extension URLSession {
                     fulfillCompletionOnTheMainThread(.success(data)) 
                 } else {
                     fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
+                    print("HTTP error: \(statusCode)")
                 }
             } else if let error = error {
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))

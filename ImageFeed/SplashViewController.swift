@@ -4,19 +4,19 @@
 //
 //  Created by Сёма Шибаев on 16.06.2025.
 //
-
+import WebKit
 import UIKit
 
 final class SplashViewController: UIViewController {
     private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
 
-    private let oauth2Service = OAuth2Service()
-    private let oauth2TokenStorage = OAuth2TokenStorage()
+    private let oauth2Service = OAuth2Service.shared
+    private let oauth2TokenStorage = OAuth2TokenStorage.shared
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-
-        if let token = oauth2TokenStorage.token {
+        
+        if oauth2TokenStorage.token != nil {
             switchToTabBarController()
         } else {
             performSegue(withIdentifier: ShowAuthenticationScreenSegueIdentifier, sender: nil)
@@ -33,25 +33,33 @@ final class SplashViewController: UIViewController {
     }
 
     private func switchToTabBarController() {
-        guard let window = UIApplication.shared.windows.first else { fatalError("Invalid Configuration") }
-        let tabBarController = UIStoryboard(name: "Main", bundle: .main)
-            .instantiateViewController(withIdentifier: "TabBarViewController")
-        window.rootViewController = tabBarController
-    }
-}
-
-extension SplashViewController {
+           guard let window = UIApplication.shared.windows.first else {
+               print("[SplashViewController] Invalid window configuration")
+               return
+           }
+           
+           let storyboard = UIStoryboard(name: "Main", bundle: .main)
+           guard let tabBarController = storyboard.instantiateViewController(
+               withIdentifier: "TabBarViewController"
+           ) as? UITabBarController else {
+               print("[SplashViewController] Failed to instantiate TabBarViewController")
+               return
+           }
+           
+           window.rootViewController = tabBarController
+       }
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == ShowAuthenticationScreenSegueIdentifier {
-            guard
-                let navigationController = segue.destination as? UINavigationController,
-                let viewController = navigationController.viewControllers[0] as? AuthViewController
-            else { fatalError("Failed to prepare for \(ShowAuthenticationScreenSegueIdentifier)") }
-            viewController.delegate = self
-        } else {
-            super.prepare(for: segue, sender: sender)
+            if segue.identifier == ShowAuthenticationScreenSegueIdentifier {
+                guard
+                    let navigationController = segue.destination as? UINavigationController,
+                    let viewController = navigationController.viewControllers.first as? AuthViewController
+                else {
+                    print("[SplashViewController] Failed to prepare for auth screen")
+                    return
+                }
+                viewController.delegate = self
+            }
         }
-    }
 }
 
 extension SplashViewController: AuthViewControllerDelegate {
@@ -64,12 +72,11 @@ extension SplashViewController: AuthViewControllerDelegate {
 
     private func fetchOAuthToken(_ code: String) {
         oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
-            guard let self = self else { return }
             switch result {
             case .success:
-                self.switchToTabBarController()
-            case .failure:
-                break
+                self?.switchToTabBarController()
+            case .failure(let error):
+                print("Auth failed: \(error.localizedDescription)")
             }
         }
     }

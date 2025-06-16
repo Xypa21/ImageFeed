@@ -10,6 +10,9 @@ import Foundation
 
 final class OAuth2Service {
     
+    static let shared = OAuth2Service()
+    private init() {}
+    
     private var task: URLSessionTask?
     private var lastCode: String?
     
@@ -27,21 +30,37 @@ final class OAuth2Service {
         }
     }
     
-    func makeOAuthTokenRequest(code: String) -> URLRequest {
-        let baseURL = URL(string: "https://unsplash.com")!
-        let url = URL(
-            string: "/oauth/token"
-            + "?client_id=\(Constants.accessKey)"
-            + "&&client_secret=\(Constants.secretKey)"
-            + "&&redirect_uri=\(Constants.redirectURI)"
-            + "&&code=\(code)"
-            + "&&grant_type=authorization_code",
-            relativeTo: baseURL
-        )!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        return request
-    }
+    private enum OAuth2ServiceError: Error {
+            case invalidRequest
+            case invalidResponse
+            case duplicateRequest
+        }
+    
+    func makeOAuthTokenRequest(code: String) -> URLRequest? {
+            guard let baseURL = URL(string: "https://unsplash.com") else {
+            print("[OAuth2Service] Failed to create base URL")
+            return nil
+        }
+        
+        var urlComponents = URLComponents()
+                urlComponents.path = "/oauth/token"
+                urlComponents.queryItems = [
+                    URLQueryItem(name: "client_id", value: Constants.accessKey),
+                    URLQueryItem(name: "client_secret", value: Constants.secretKey),
+                    URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
+                    URLQueryItem(name: "code", value: code),
+                    URLQueryItem(name: "grant_type", value: "authorization_code")
+                ]
+                
+        guard let url = urlComponents.url(relativeTo: baseURL) else {
+            print("[OAuth2Service] Invalid URL components: \(urlComponents)")
+            return nil
+        }
+                
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                return request
+            }
     
     func fetchOAuthToken(
         code: String,
@@ -49,28 +68,47 @@ final class OAuth2Service {
     ) {
         assert(Thread.isMainThread)
         
-        if lastCode == code { return }
+        if lastCode == code { 
+            print("[OAuth2Service] Duplicate request detected")
+            completion(.failure(OAuth2ServiceError.duplicateRequest))
+            return }
         task?.cancel()
         lastCode = code
         
-        let request = makeOAuthTokenRequest(code: code)
+        guard let request = makeOAuthTokenRequest(code: code) else {
+            print("[OAuth2Service] Failed to create request")
+            completion(.failure(OAuth2ServiceError.invalidRequest))
+            return }
+        
         
         task = URLSession.shared.data(for: request) { [weak self] result in
-            guard let self = self else { return }
-            
-            switch result {
-            case .success(let data):
-                do {
-                    let tokenResponse = try JSONDecoder().decode(OAuthTokenResponseBody.self, from: data)
-                    completion(.success(tokenResponse.accessToken))
-                } catch {
-                    completion(.failure(error))
+                    guard let self = self else { return }
+                    
+                    DispatchQueue.main.async {
+                        switch result {
+                        case .success(let data):
+                            do {
+                                let tokenResponse = try JSONDecoder().decode(OAuthTokenResponseBody.self, from: data)
+                                OAuth2TokenStorage.shared.token = tokenResponse.accessToken
+                                print("[OAuth2Service] Successfully received token")
+                                guard !tokenResponse.accessToken.isEmpty else {
+                                    completion(.failure(OAuth2ServiceError.invalidResponse))
+                                    return
+                                }
+                                completion(.success(tokenResponse.accessToken))
+                            } catch {
+                                print("[OAuth2Service] Decoding error: \(error.localizedDescription)")
+                                completion(.failure(error))
+                            }
+                        case .failure(let error):
+                            print("[OAuth2Service] Network error: \(error.localizedDescription)")
+                            completion(.failure(error))
+                        }
+                        
+                        self.lastCode = nil
+                    }
                 }
-            case .failure(let error):
-                completion(.failure(error))
+                
+                task?.resume()
             }
-            
-            self.lastCode = nil
         }
-    }
-}

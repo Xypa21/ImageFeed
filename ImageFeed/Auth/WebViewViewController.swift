@@ -28,11 +28,12 @@ final class WebViewViewController: UIViewController {
     }
     
     
-    @IBOutlet private var progressView: UIProgressView!
+    @IBOutlet var progressView: UIProgressView!
     
     weak var delegate: WebViewViewControllerDelegate?
     
     override func viewDidLoad() {
+        super.viewDidLoad()
         loadAuthView()
         webView.navigationDelegate = self
         updateProgress()
@@ -79,6 +80,7 @@ final class WebViewViewController: UIViewController {
         ]
 
         guard let url = urlComponents.url else {
+            print("[WebView] Failed to create auth URL from components: \(urlComponents)")
             return
         }
 
@@ -93,7 +95,7 @@ extension WebViewViewController: WKNavigationDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-         if let code = code(from: navigationAction) {
+        if code(from: navigationAction) != nil {
                 decisionHandler(.cancel)
           } else {
                 decisionHandler(.allow)
