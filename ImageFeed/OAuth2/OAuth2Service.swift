@@ -37,30 +37,29 @@ final class OAuth2Service {
         }
     
     func makeOAuthTokenRequest(code: String) -> URLRequest? {
-            guard let baseURL = URL(string: "https://unsplash.com") else {
+        guard
+            var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token")
+        else {
             print("[OAuth2Service] Failed to create base URL")
             return nil
         }
         
-        var urlComponents = URLComponents()
-                urlComponents.path = "/oauth/token"
-                urlComponents.queryItems = [
-                    URLQueryItem(name: "client_id", value: Constants.accessKey),
-                    URLQueryItem(name: "client_secret", value: Constants.secretKey),
-                    URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
-                    URLQueryItem(name: "code", value: code),
-                    URLQueryItem(name: "grant_type", value: "authorization_code")
-                ]
-                
-        guard let url = urlComponents.url(relativeTo: baseURL) else {
-            print("[OAuth2Service] Invalid URL components: \(urlComponents)")
+        urlComponents.queryItems = [
+            URLQueryItem(name: "client_id", value: Constants.accessKey),
+            URLQueryItem(name: "client_secret", value: Constants.secretKey),
+            URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
+            URLQueryItem(name: "code", value: code),
+            URLQueryItem(name: "grant_type", value: "authorization_code"),
+        ]
+        
+        guard let authTokenUrl = urlComponents.url else {
             return nil
         }
-                
-                var request = URLRequest(url: url)
-                request.httpMethod = "POST"
-                return request
-            }
+        
+        var request = URLRequest(url: authTokenUrl)
+        request.httpMethod = "POST"
+        return request
+    }
     
     func fetchOAuthToken(
         code: String,

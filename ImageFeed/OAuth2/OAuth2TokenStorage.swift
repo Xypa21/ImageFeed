@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WebKit
 
 final class OAuth2TokenStorage {
     
