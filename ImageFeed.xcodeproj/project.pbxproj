@@ -15,6 +15,7 @@
 		751D46242E0068E200FA6AB4 /* OAuth2TokenStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46232E0068E200FA6AB4 /* OAuth2TokenStorage.swift */; };
 		751D46262E0068F600FA6AB4 /* OAuth2Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46252E0068F600FA6AB4 /* OAuth2Service.swift */; };
 		751D46282E00690D00FA6AB4 /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46272E00690D00FA6AB4 /* SplashViewController.swift */; };
+		751D462F2E01B74900FA6AB4 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 751D462E2E01B74800FA6AB4 /* WebKit.framework */; };
 		75A102602DDFAA2E00E4C19B /* ImagesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A1025F2DDFAA2E00E4C19B /* ImagesListCell.swift */; };
 		75A102832DE4DF8B00E4C19B /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A102822DE4DF8B00E4C19B /* ProfileViewController.swift */; };
 		75A3C7812DC933EF00EA792D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A3C7802DC933EF00EA792D /* AppDelegate.swift */; };
@@ -34,6 +35,7 @@
 		751D46232E0068E200FA6AB4 /* OAuth2TokenStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuth2TokenStorage.swift; sourceTree = "<group>"; };
 		751D46252E0068F600FA6AB4 /* OAuth2Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuth2Service.swift; sourceTree = "<group>"; };
 		751D46272E00690D00FA6AB4 /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
+		751D462E2E01B74800FA6AB4 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		75A1025F2DDFAA2E00E4C19B /* ImagesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesListCell.swift; sourceTree = "<group>"; };
 		75A102822DE4DF8B00E4C19B /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		75A3C77D2DC933EF00EA792D /* ImageFeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageFeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -51,6 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				751D462F2E01B74900FA6AB4 /* WebKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,10 +80,27 @@
 		751D46292E00693300FA6AB4 /* OAuth2 */ = {
 			isa = PBXGroup;
 			children = (
-				751D46232E0068E200FA6AB4 /* OAuth2TokenStorage.swift */,
 				751D46252E0068F600FA6AB4 /* OAuth2Service.swift */,
+				751D46232E0068E200FA6AB4 /* OAuth2TokenStorage.swift */,
 			);
 			path = OAuth2;
+			sourceTree = "<group>";
+		};
+		751D462D2E01B74800FA6AB4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				751D462E2E01B74800FA6AB4 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		751D46302E01CA8500FA6AB4 /* ServiceAccessLayer */ = {
+			isa = PBXGroup;
+			children = (
+				751D46212E00613800FA6AB4 /* URLSession+data.swift */,
+				751D46292E00693300FA6AB4 /* OAuth2 */,
+			);
+			path = ServiceAccessLayer;
 			sourceTree = "<group>";
 		};
 		75A102612DDFAA5000E4C19B /* ImagesList */ = {
@@ -105,6 +125,7 @@
 			children = (
 				75A3C77F2DC933EF00EA792D /* ImageFeed */,
 				75A3C77E2DC933EF00EA792D /* Products */,
+				751D462D2E01B74800FA6AB4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -122,9 +143,8 @@
 				75A3C7802DC933EF00EA792D /* AppDelegate.swift */,
 				75A3C7822DC933EF00EA792D /* SceneDelegate.swift */,
 				751D461A2DFDE06600FA6AB4 /* Constants.swift */,
-				751D46212E00613800FA6AB4 /* URLSession+data.swift */,
+				751D46302E01CA8500FA6AB4 /* ServiceAccessLayer */,
 				751D46272E00690D00FA6AB4 /* SplashViewController.swift */,
-				751D46292E00693300FA6AB4 /* OAuth2 */,
 				751D461E2DFF3A2E00FA6AB4 /* Auth */,
 				75A102842DE4DFDD00E4C19B /* Profile */,
 				75A102612DDFAA5000E4C19B /* ImagesList */,
