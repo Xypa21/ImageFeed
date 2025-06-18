@@ -16,6 +16,7 @@
 		751D46262E0068F600FA6AB4 /* OAuth2Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46252E0068F600FA6AB4 /* OAuth2Service.swift */; };
 		751D46282E00690D00FA6AB4 /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46272E00690D00FA6AB4 /* SplashViewController.swift */; };
 		751D462F2E01B74900FA6AB4 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 751D462E2E01B74800FA6AB4 /* WebKit.framework */; };
+		751D46312E02FD6D00FA6AB4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75A3C7862DC933EF00EA792D /* Main.storyboard */; };
 		75A102602DDFAA2E00E4C19B /* ImagesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A1025F2DDFAA2E00E4C19B /* ImagesListCell.swift */; };
 		75A102832DE4DF8B00E4C19B /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A102822DE4DF8B00E4C19B /* ProfileViewController.swift */; };
 		75A3C7812DC933EF00EA792D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A3C7802DC933EF00EA792D /* AppDelegate.swift */; };
@@ -218,6 +219,7 @@
 				75A3C78A2DC933F000EA792D /* Assets.xcassets in Resources */,
 				75A3C78D2DC933F000EA792D /* Base in Resources */,
 				75A3C7882DC933EF00EA792D /* Base in Resources */,
+				751D46312E02FD6D00FA6AB4 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

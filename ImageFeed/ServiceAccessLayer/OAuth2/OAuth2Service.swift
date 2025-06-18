@@ -13,7 +13,8 @@ final class OAuth2Service {
     static let shared = OAuth2Service()
     private init() {}
     
-    private let dataStorage = OAuth2TokenStorage()
+    private let dataStorage = OAuth2TokenStorage.shared
+    
     private let urlSession = URLSession.shared
     
     private var task: URLSessionTask?
@@ -40,7 +41,7 @@ final class OAuth2Service {
         guard
             var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token")
         else {
-            print("[OAuth2Service] Failed to create base URL")
+            print("Failed to create base URL")
             return nil
         }
         
@@ -62,6 +63,7 @@ final class OAuth2Service {
     }
     
     func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
+        task?.cancel()
         guard
             let request = makeOAuthTokenRequest(code: code)
         else {
@@ -69,38 +71,43 @@ final class OAuth2Service {
             return
         }
         
-        let task = object(for: request) { [weak self] result in
-            guard let self = self else { return }
+        let task = URLSession.shared.data(for: request) { [weak self] (result: Result<Data, Error>) in
             switch result {
-            case .success(let body):
-                let authToken = body.accessToken
-                self.authToken = authToken
-                completion(.success(authToken))
+            case .success(let data):
+                do {
+                    let response = try JSONDecoder().decode(OAuthTokenResponseBody.self, from: data)
+                    OAuth2TokenStorage.shared.token = response.accessToken
+                    completion(.success(response.accessToken))
+                } catch {
+                    completion(.failure(NetworkError.decodingError(error)))
+                }
             case .failure(let error):
                 completion(.failure(error))
             }
+            self?.task = nil
         }
         task.resume()
     }
 }
 
-extension OAuth2Service {
-    private func object(for request: URLRequest, completion: @escaping (Result<OAuthTokenResponseBody, Error>) -> Void) -> URLSessionTask {
-        let decoder = JSONDecoder()
-        return urlSession.data(for: request) { (result: Result<Data, Error>) in
-            switch result {
-            case .success(let data):
-                do {
-                    let body = try decoder.decode(OAuthTokenResponseBody.self, from: data)
-                    completion(.success(body))
+    extension OAuth2Service {
+        private func object(for request: URLRequest, completion: @escaping (Result<OAuthTokenResponseBody, Error>) -> Void) -> URLSessionTask {
+            let decoder = JSONDecoder()
+            return urlSession.data(for: request) { (result: Result<Data, Error>) in
+                switch result {
+                case .success(let data):
+                    do {
+                        let body = try decoder.decode(OAuthTokenResponseBody.self, from: data)
+                        completion(.success(body))
+                    }
+                    catch {
+                        completion(.failure(NetworkError.decodingError(error)))
+                    }
+                    
+                case .failure(let error):
+                    completion(.failure(error))
                 }
-                catch {
-                    completion(.failure(NetworkError.decodingError(error)))
-                }
-                
-            case .failure(let error):
-                completion(.failure(error))
             }
         }
     }
-}
+
