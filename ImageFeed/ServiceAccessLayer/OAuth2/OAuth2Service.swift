@@ -54,6 +54,7 @@ final class OAuth2Service {
         ]
         
         guard let authTokenUrl = urlComponents.url else {
+            print("Invalid URL components: \(urlComponents)")
             return nil
         }
         
@@ -67,6 +68,7 @@ final class OAuth2Service {
         guard
             let request = makeOAuthTokenRequest(code: code)
         else {
+            print("Failed to create request")
             completion(.failure(NetworkError.invalidRequest))
             return
         }
@@ -79,9 +81,11 @@ final class OAuth2Service {
                     OAuth2TokenStorage.shared.token = response.accessToken
                     completion(.success(response.accessToken))
                 } catch {
+                    print("Decoding error: \(error.localizedDescription)")
                     completion(.failure(NetworkError.decodingError(error)))
                 }
             case .failure(let error):
+                print("Network error: \(error.localizedDescription)")
                 completion(.failure(error))
             }
             self?.task = nil

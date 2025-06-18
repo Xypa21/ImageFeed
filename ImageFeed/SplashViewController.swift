@@ -55,7 +55,10 @@ final class SplashViewController: UIViewController {
             return
         }
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let tabBarVC = storyboard.instantiateViewController(withIdentifier: "TabBarViewController")
+        guard let tabBarVC = storyboard.instantiateViewController(withIdentifier: "TabBarViewController") as? UITabBarController else {
+            print("Failed to instantiate TabBarViewController")
+            return
+        }
         UIView.transition(
             with: window,
             duration: 0.3,
@@ -97,7 +100,8 @@ extension SplashViewController: AuthViewControllerDelegate {
                 switch result {
                 case .success:
                     self?.switchToTabBarController()
-                case .failure:
+                case .failure(let error):
+                    print("Auth failed: \(error.localizedDescription)")
                     self?.showAuthController()
                 }
             }

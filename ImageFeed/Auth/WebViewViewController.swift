@@ -81,7 +81,7 @@ final class WebViewViewController: UIViewController {
         ]
         
         guard let url = urlComponents.url else {
-            print("[WebView] Failed to create auth URL from components: \(urlComponents)")
+            print("Failed to create auth URL from components: \(urlComponents)")
             return
         }
         

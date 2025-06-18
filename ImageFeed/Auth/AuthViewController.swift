@@ -18,7 +18,7 @@ final class AuthViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
             if segue.identifier == showWebViewSegueIdentifier {
                 guard let webViewViewController = segue.destination as? WebViewViewController else {
-                    assertionFailure("Failed to cast destination as WebViewViewController")
+                    print("Failed to cast destination as WebViewViewController")
                     return
                 }
                 webViewViewController.delegate = self
