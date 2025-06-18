@@ -8,6 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		751D46162DEE2A5600FA6AB4 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46152DEE2A5600FA6AB4 /* SingleImageViewController.swift */; };
+		751D461B2DFDE06600FA6AB4 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D461A2DFDE06600FA6AB4 /* Constants.swift */; };
+		751D461D2DFF38EE00FA6AB4 /* AuthViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D461C2DFF38EE00FA6AB4 /* AuthViewController.swift */; };
+		751D46202DFF3B5500FA6AB4 /* WebViewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D461F2DFF3B5500FA6AB4 /* WebViewViewController.swift */; };
+		751D46222E00613800FA6AB4 /* URLSession+data.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46212E00613800FA6AB4 /* URLSession+data.swift */; };
+		751D46242E0068E200FA6AB4 /* OAuth2TokenStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46232E0068E200FA6AB4 /* OAuth2TokenStorage.swift */; };
+		751D46262E0068F600FA6AB4 /* OAuth2Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46252E0068F600FA6AB4 /* OAuth2Service.swift */; };
+		751D46282E00690D00FA6AB4 /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751D46272E00690D00FA6AB4 /* SplashViewController.swift */; };
+		751D462F2E01B74900FA6AB4 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 751D462E2E01B74800FA6AB4 /* WebKit.framework */; };
+		751D46312E02FD6D00FA6AB4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 75A3C7862DC933EF00EA792D /* Main.storyboard */; };
 		75A102602DDFAA2E00E4C19B /* ImagesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A1025F2DDFAA2E00E4C19B /* ImagesListCell.swift */; };
 		75A102832DE4DF8B00E4C19B /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A102822DE4DF8B00E4C19B /* ProfileViewController.swift */; };
 		75A3C7812DC933EF00EA792D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A3C7802DC933EF00EA792D /* AppDelegate.swift */; };
@@ -20,6 +29,14 @@
 
 /* Begin PBXFileReference section */
 		751D46152DEE2A5600FA6AB4 /* SingleImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleImageViewController.swift; sourceTree = "<group>"; };
+		751D461A2DFDE06600FA6AB4 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Constants.swift; path = ../Constants.swift; sourceTree = "<group>"; };
+		751D461C2DFF38EE00FA6AB4 /* AuthViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewController.swift; sourceTree = "<group>"; };
+		751D461F2DFF3B5500FA6AB4 /* WebViewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewViewController.swift; sourceTree = "<group>"; };
+		751D46212E00613800FA6AB4 /* URLSession+data.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSession+data.swift"; sourceTree = "<group>"; };
+		751D46232E0068E200FA6AB4 /* OAuth2TokenStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuth2TokenStorage.swift; sourceTree = "<group>"; };
+		751D46252E0068F600FA6AB4 /* OAuth2Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuth2Service.swift; sourceTree = "<group>"; };
+		751D46272E00690D00FA6AB4 /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
+		751D462E2E01B74800FA6AB4 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		75A1025F2DDFAA2E00E4C19B /* ImagesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesListCell.swift; sourceTree = "<group>"; };
 		75A102822DE4DF8B00E4C19B /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		75A3C77D2DC933EF00EA792D /* ImageFeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageFeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -37,6 +54,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				751D462F2E01B74900FA6AB4 /* WebKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,6 +67,41 @@
 				751D46152DEE2A5600FA6AB4 /* SingleImageViewController.swift */,
 			);
 			path = SingleImageView;
+			sourceTree = "<group>";
+		};
+		751D461E2DFF3A2E00FA6AB4 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				751D461C2DFF38EE00FA6AB4 /* AuthViewController.swift */,
+				751D461F2DFF3B5500FA6AB4 /* WebViewViewController.swift */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		751D46292E00693300FA6AB4 /* OAuth2 */ = {
+			isa = PBXGroup;
+			children = (
+				751D46252E0068F600FA6AB4 /* OAuth2Service.swift */,
+				751D46232E0068E200FA6AB4 /* OAuth2TokenStorage.swift */,
+			);
+			path = OAuth2;
+			sourceTree = "<group>";
+		};
+		751D462D2E01B74800FA6AB4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				751D462E2E01B74800FA6AB4 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		751D46302E01CA8500FA6AB4 /* ServiceAccessLayer */ = {
+			isa = PBXGroup;
+			children = (
+				751D46212E00613800FA6AB4 /* URLSession+data.swift */,
+				751D46292E00693300FA6AB4 /* OAuth2 */,
+			);
+			path = ServiceAccessLayer;
 			sourceTree = "<group>";
 		};
 		75A102612DDFAA5000E4C19B /* ImagesList */ = {
@@ -73,6 +126,7 @@
 			children = (
 				75A3C77F2DC933EF00EA792D /* ImageFeed */,
 				75A3C77E2DC933EF00EA792D /* Products */,
+				751D462D2E01B74800FA6AB4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -89,11 +143,15 @@
 			children = (
 				75A3C7802DC933EF00EA792D /* AppDelegate.swift */,
 				75A3C7822DC933EF00EA792D /* SceneDelegate.swift */,
+				751D461A2DFDE06600FA6AB4 /* Constants.swift */,
+				751D46302E01CA8500FA6AB4 /* ServiceAccessLayer */,
+				751D46272E00690D00FA6AB4 /* SplashViewController.swift */,
+				751D461E2DFF3A2E00FA6AB4 /* Auth */,
 				75A102842DE4DFDD00E4C19B /* Profile */,
 				75A102612DDFAA5000E4C19B /* ImagesList */,
 				751D46172DEE2CE600FA6AB4 /* SingleImageView */,
-				75A3C7862DC933EF00EA792D /* Main.storyboard */,
 				75A3C7892DC933F000EA792D /* Assets.xcassets */,
+				75A3C7862DC933EF00EA792D /* Main.storyboard */,
 				75A3C78B2DC933F000EA792D /* LaunchScreen.storyboard */,
 				75A3C78E2DC933F000EA792D /* Info.plist */,
 			);
@@ -161,6 +219,7 @@
 				75A3C78A2DC933F000EA792D /* Assets.xcassets in Resources */,
 				75A3C78D2DC933F000EA792D /* Base in Resources */,
 				75A3C7882DC933EF00EA792D /* Base in Resources */,
+				751D46312E02FD6D00FA6AB4 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,9 +232,16 @@
 			files = (
 				75A3C7852DC933EF00EA792D /* ImagesListViewController.swift in Sources */,
 				75A102602DDFAA2E00E4C19B /* ImagesListCell.swift in Sources */,
+				751D46262E0068F600FA6AB4 /* OAuth2Service.swift in Sources */,
 				75A102832DE4DF8B00E4C19B /* ProfileViewController.swift in Sources */,
 				75A3C7812DC933EF00EA792D /* AppDelegate.swift in Sources */,
+				751D46242E0068E200FA6AB4 /* OAuth2TokenStorage.swift in Sources */,
+				751D46282E00690D00FA6AB4 /* SplashViewController.swift in Sources */,
+				751D461D2DFF38EE00FA6AB4 /* AuthViewController.swift in Sources */,
+				751D461B2DFDE06600FA6AB4 /* Constants.swift in Sources */,
 				751D46162DEE2A5600FA6AB4 /* SingleImageViewController.swift in Sources */,
+				751D46202DFF3B5500FA6AB4 /* WebViewViewController.swift in Sources */,
+				751D46222E00613800FA6AB4 /* URLSession+data.swift in Sources */,
 				75A3C7832DC933EF00EA792D /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -1,0 +1,117 @@
+//
+//  OAuth2Service.swift
+//  ImageFeed
+//
+//  Created by Сёма Шибаев on 16.06.2025.
+//
+
+import Foundation
+
+
+final class OAuth2Service {
+    
+    static let shared = OAuth2Service()
+    private init() {}
+    
+    private let dataStorage = OAuth2TokenStorage.shared
+    
+    private let urlSession = URLSession.shared
+    
+    private var task: URLSessionTask?
+    private var lastCode: String?
+    
+    private (set) var authToken: String? {
+        get {
+            return dataStorage.token
+        }
+        set {
+            dataStorage.token = newValue
+        }
+    }
+    
+    private struct OAuthTokenResponseBody: Codable {
+        let accessToken: String
+        
+        enum CodingKeys: String, CodingKey {
+            case accessToken = "access_token"
+        }
+    }
+    
+    private func makeOAuthTokenRequest(code: String) -> URLRequest? {
+        guard
+            var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token")
+        else {
+            print("Failed to create base URL")
+            return nil
+        }
+        
+        urlComponents.queryItems = [
+            URLQueryItem(name: "client_id", value: Constants.accessKey),
+            URLQueryItem(name: "client_secret", value: Constants.secretKey),
+            URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
+            URLQueryItem(name: "code", value: code),
+            URLQueryItem(name: "grant_type", value: "authorization_code"),
+        ]
+        
+        guard let authTokenUrl = urlComponents.url else {
+            print("Invalid URL components: \(urlComponents)")
+            return nil
+        }
+        
+        var request = URLRequest(url: authTokenUrl)
+        request.httpMethod = "POST"
+        return request
+    }
+    
+    func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
+        task?.cancel()
+        guard
+            let request = makeOAuthTokenRequest(code: code)
+        else {
+            print("Failed to create request")
+            completion(.failure(NetworkError.invalidRequest))
+            return
+        }
+        
+        let task = URLSession.shared.data(for: request) { [weak self] (result: Result<Data, Error>) in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try JSONDecoder().decode(OAuthTokenResponseBody.self, from: data)
+                    OAuth2TokenStorage.shared.token = response.accessToken
+                    completion(.success(response.accessToken))
+                } catch {
+                    print("Decoding error: \(error.localizedDescription)")
+                    completion(.failure(NetworkError.decodingError(error)))
+                }
+            case .failure(let error):
+                print("Network error: \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+            self?.task = nil
+        }
+        task.resume()
+    }
+}
+
+    extension OAuth2Service {
+        private func object(for request: URLRequest, completion: @escaping (Result<OAuthTokenResponseBody, Error>) -> Void) -> URLSessionTask {
+            let decoder = JSONDecoder()
+            return urlSession.data(for: request) { (result: Result<Data, Error>) in
+                switch result {
+                case .success(let data):
+                    do {
+                        let body = try decoder.decode(OAuthTokenResponseBody.self, from: data)
+                        completion(.success(body))
+                    }
+                    catch {
+                        completion(.failure(NetworkError.decodingError(error)))
+                    }
+                    
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+
