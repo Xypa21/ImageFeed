@@ -15,7 +15,7 @@ final class ProfileViewController: UIViewController {
     private var infoLabel: UILabel?
     
     private var profileImageServiceObserver: NSObjectProtocol?
-    private let profileImageService = ProfileService.shared
+    private let profileService = ProfileService.shared
     
     private let profileImageView: UIImageView = {
             let imageView = UIImageView()
@@ -45,7 +45,7 @@ final class ProfileViewController: UIViewController {
             return label
         }()
         
-    private let InfoLabel: UILabel = {
+    private let bioLabel: UILabel = {
             let label = UILabel()
             label.text = "Hello, world!"
             label.textColor = UIColor(named: "YP White")
@@ -72,14 +72,13 @@ final class ProfileViewController: UIViewController {
             setupSubviews()
             setupConstraints()
             loadProfileData()
-            setupObserver()
         }
     
     private func setupSubviews() {
         view.addSubview(profileImageView)
         view.addSubview(NameLabel)
         view.addSubview(LoginLabel)
-        view.addSubview(InfoLabel)
+        view.addSubview(bioLabel)
         view.addSubview(logoutButton)
     }
     
@@ -96,8 +95,8 @@ final class ProfileViewController: UIViewController {
             LoginLabel.leadingAnchor.constraint(equalTo: profileImageView.leadingAnchor),
             LoginLabel.topAnchor.constraint(equalTo: NameLabel.bottomAnchor, constant: 8),
             
-            InfoLabel.leadingAnchor.constraint(equalTo: profileImageView.leadingAnchor),
-            InfoLabel.topAnchor.constraint(equalTo: LoginLabel.bottomAnchor, constant: 8),
+            bioLabel.leadingAnchor.constraint(equalTo: profileImageView.leadingAnchor),
+            bioLabel.topAnchor.constraint(equalTo: LoginLabel.bottomAnchor, constant: 8),
             
             logoutButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
             logoutButton.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor)
@@ -118,7 +117,6 @@ final class ProfileViewController: UIViewController {
                     switch result {
                     case .success(let profile):
                         self?.updateProfileDetails(profile: profile)
-                        self?.fetchProfileImage(username: profile.username)
                     case .failure(let error):
                         print("Failed to fetch profile: \(error.localizedDescription)")
                     }
@@ -131,39 +129,6 @@ final class ProfileViewController: UIViewController {
             loginLabel?.text = profile.loginName
             infoLabel?.text = profile.bio
         }
-        
-        private func fetchProfileImage(username: String) {
-            profileImageService.fetchProfileImageURL(username: username) { [weak self] _ in
-                DispatchQueue.main.async {
-                    self?.updateAvatar()
-                }
-            }
-        }
-        
-        private func setupObserver() {
-            profileImageServiceObserver = NotificationCenter.default.addObserver(
-                forName: ProfileImageService.didChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                self?.updateAvatar()
-            }
-        }
-        
-        private func updateAvatar() {
-            guard
-                let profileImageURL = ProfileImageService.shared.avatarURL,
-                let url = URL(string: profileImageURL)
-            else { return }
-            
-            let processor = RoundCornerImageProcessor(cornerRadius: 35)
-            profileImageView.kf.indicatorType = .activity
-            profileImageView.kf.setImage(
-                with: url,
-                placeholder: UIImage(named: "Avatar"),
-                options: [.processor(processor)]
-            )
-        }
     
     @objc
     private func didTapLogoutButton() {
@@ -171,15 +136,14 @@ final class ProfileViewController: UIViewController {
     }
     
     private func performLogout() {
-            OAuth2TokenStorage().token = nil
-            ProfileService.shared.clean()
-            ProfileImageService.shared.clean()
+          OAuth2TokenStorage().token = nil
+          ProfileService.shared.clean()
           
-            guard let window = UIApplication.shared.windows.first else {
-                fatalError("Invalid configuration")
-            }
-            
-            let storyboard = UIStoryboard(name: "Main", bundle: .main)
-            window.rootViewController = storyboard.instantiateInitialViewController()
-    }
+          guard let window = UIApplication.shared.windows.first else {
+              fatalError("Invalid configuration")
+          }
+          
+          let storyboard = UIStoryboard(name: "Main", bundle: .main)
+          window.rootViewController = storyboard.instantiateInitialViewController()
+      }
 }
