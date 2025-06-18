@@ -8,13 +8,15 @@
 
 import UIKit
 
+
 final class ProfileViewController: UIViewController {
     private var nameLabel: UILabel?
     private var loginLabel: UILabel?
     private var infoLabel: UILabel?
     
+    private var profileImageServiceObserver: NSObjectProtocol?
+    private let profileImageService = ProfileService.shared
     
-    private let logoutImage = UIImage (named: "NoAvatar")
     private let profileImageView: UIImageView = {
             let imageView = UIImageView()
             imageView.image = UIImage(named: "Avatar") ?? UIImage(systemName: "person.crop.circle")
@@ -69,6 +71,8 @@ final class ProfileViewController: UIViewController {
             view.backgroundColor = UIColor(named: "YP Black")
             setupSubviews()
             setupConstraints()
+            loadProfileData()
+            setupObserver()
         }
     
     private func setupSubviews() {
@@ -100,13 +104,82 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
-    @objc
-    private func didTapLogoutButton() {
-        profileImageView.image = logoutImage
-        for view in view.subviews {
-            if view is UILabel {
-            view.removeFromSuperview()
+    private func loadProfileData() {
+            guard let token = OAuth2TokenStorage().token else {
+                print("No token available")
+                return
+            }
+            
+            UIBlockingProgressHUD.show()
+            ProfileService.shared.fetchProfile(token) { [weak self] result in
+                DispatchQueue.main.async {
+                    UIBlockingProgressHUD.dismiss()
+                    
+                    switch result {
+                    case .success(let profile):
+                        self?.updateProfileDetails(profile: profile)
+                        self?.fetchProfileImage(username: profile.username)
+                    case .failure(let error):
+                        print("Failed to fetch profile: \(error.localizedDescription)")
+                    }
+                }
             }
         }
+        
+        private func updateProfileDetails(profile: ProfileService.Profile) {
+            nameLabel?.text = profile.name
+            loginLabel?.text = profile.loginName
+            infoLabel?.text = profile.bio
+        }
+        
+        private func fetchProfileImage(username: String) {
+            profileImageService.fetchProfileImageURL(username: username) { [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.updateAvatar()
+                }
+            }
+        }
+        
+        private func setupObserver() {
+            profileImageServiceObserver = NotificationCenter.default.addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                self?.updateAvatar()
+            }
+        }
+        
+        private func updateAvatar() {
+            guard
+                let profileImageURL = ProfileImageService.shared.avatarURL,
+                let url = URL(string: profileImageURL)
+            else { return }
+            
+            let processor = RoundCornerImageProcessor(cornerRadius: 35)
+            profileImageView.kf.indicatorType = .activity
+            profileImageView.kf.setImage(
+                with: url,
+                placeholder: UIImage(named: "Avatar"),
+                options: [.processor(processor)]
+            )
+        }
+    
+    @objc
+    private func didTapLogoutButton() {
+        performLogout()
+    }
+    
+    private func performLogout() {
+            OAuth2TokenStorage().token = nil
+            ProfileService.shared.clean()
+            ProfileImageService.shared.clean()
+          
+            guard let window = UIApplication.shared.windows.first else {
+                fatalError("Invalid configuration")
+            }
+            
+            let storyboard = UIStoryboard(name: "Main", bundle: .main)
+            window.rootViewController = storyboard.instantiateInitialViewController()
     }
 }

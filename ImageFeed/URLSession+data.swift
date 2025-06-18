@@ -11,7 +11,12 @@ enum NetworkError: Error {
     case httpStatusCode(Int)
     case urlRequestError(Error)
     case urlSessionError
+    case invalidRequest
+    case decodingError(Error)
+    case httpResponseError
+    case dataError
 }
+
 
 extension URLSession {
     func data(
@@ -38,6 +43,48 @@ extension URLSession {
             }
         })
         
+        return task
+    }
+}
+
+
+extension URLSession {
+    func objectTask<T: Decodable>(
+        for request: URLRequest,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) -> URLSessionTask {
+        let task = dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    completion(.failure(error))
+                    return
+                }
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    completion(.failure(NetworkError.httpResponseError))
+                    return
+                }
+                
+                guard (200..<300).contains(httpResponse.statusCode) else {
+                    completion(.failure(NetworkError.httpStatusCode(httpResponse.statusCode)))
+                    return
+                }
+                
+                guard let data = data else {
+                    completion(.failure(NetworkError.dataError))
+                    return
+                }
+                
+                do {
+                    let decoder = JSONDecoder()
+                    decoder.keyDecodingStrategy = .convertFromSnakeCase
+                    let result = try decoder.decode(T.self, from: data)
+                    completion(.success(result))
+                } catch {
+                    completion(.failure(NetworkError.decodingError(error)))
+                }
+            }
+        }
         return task
     }
 }

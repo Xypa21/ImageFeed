@@ -24,18 +24,19 @@ final class WebViewViewController: UIViewController {
     
     
     @IBAction func tapBackButton() {
-        dismiss(animated: true, completion: nil)
+        delegate?.webViewViewControllerDidCancel(self)
     }
     
     
     @IBOutlet private var progressView: UIProgressView!
     
+    private var isAuthorizationInProgress = false
     weak var delegate: WebViewViewControllerDelegate?
     
     override func viewDidLoad() {
+        super.viewDidLoad()
         loadAuthView()
         webView.navigationDelegate = self
-        updateProgress()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -51,6 +52,7 @@ final class WebViewViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         webView.removeObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), context: nil)
+        UIBlockingProgressHUD.dismiss()
     }
 
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -84,6 +86,8 @@ final class WebViewViewController: UIViewController {
 
         let request = URLRequest(url: url)
         webView.load(request)
+        
+        updateProgress()
     }
 }
 
@@ -94,7 +98,8 @@ extension WebViewViewController: WKNavigationDelegate {
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
          if let code = code(from: navigationAction) {
-                decisionHandler(.cancel)
+             handleAuthCode(code: code)
+             decisionHandler(.cancel)
           } else {
                 decisionHandler(.allow)
             }
@@ -110,8 +115,17 @@ extension WebViewViewController: WKNavigationDelegate {
             let codeItem = items.first(where: { $0.name == "code" })
         {
             return codeItem.value
-        } else {
+        }
             return nil
         }
-    }
+    
+    
+    private func handleAuthCode(code: String) {
+            guard !isAuthorizationInProgress else { return }
+            
+            isAuthorizationInProgress = true
+            UIBlockingProgressHUD.show()
+            
+            delegate?.webViewViewController(self, didAuthenticateWithCode: code)
+        }
 }
