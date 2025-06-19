@@ -7,11 +7,11 @@
 
 import Foundation
 
-import Foundation
-
 final class ProfileService {
     static let shared = ProfileService()
     private init() {}
+    
+    
     
     private(set) var profile: Profile?
     private var task: URLSessionTask?
@@ -22,13 +22,6 @@ final class ProfileService {
         let firstName: String?
         let lastName: String?
         let bio: String?
-        
-        enum CodingKeys: String, CodingKey {
-            case username = "username"
-            case firstName = "first_name"
-            case lastName = "last_name"
-            case bio = "bio"
-        }
     }
     
     struct Profile {
@@ -42,14 +35,16 @@ final class ProfileService {
             self.loginName = "@" + result.username
             
             var nameComponents = [String]()
-            if let firstName = result.firstName {
+            if let firstName = result.firstName, !firstName.isEmpty {
                 nameComponents.append(firstName)
             }
-            if let lastName = result.lastName {
+            if let lastName = result.lastName, !lastName.isEmpty {
                 nameComponents.append(lastName)
             }
-            self.name = nameComponents.joined(separator: " ")
+            self.name = nameComponents.isEmpty ? result.username : nameComponents.joined(separator: " ")
             self.bio = result.bio
+            
+            print("[DEBUG] Profile created: \(self)")
         }
     }
     
@@ -95,3 +90,4 @@ final class ProfileService {
         return request
     }
 }
+
