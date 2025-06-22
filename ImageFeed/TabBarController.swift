@@ -23,15 +23,12 @@ final class TabBarController: UITabBarController {
     private func setupViewControllers() {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
-        // 1. ImagesListViewController
         guard let imagesListVC = storyboard.instantiateViewController(withIdentifier: "ImagesListViewController") as? ImagesListViewController else {
             fatalError("Не удалось загрузить ImagesListViewController из Storyboard")
         }
         
-        // 2. ProfileViewController
         let profileVC = ProfileViewController()
         
-        // Настройка табов
         imagesListVC.tabBarItem = UITabBarItem(
             title: nil,
             image: UIImage(named: "tab_editorial_active"),
@@ -53,34 +50,22 @@ final class TabBarController: UITabBarController {
             let appearance = UITabBarAppearance()
             appearance.configureWithOpaqueBackground()
             
-            // Основной серый фон таббара
             appearance.backgroundColor = UIColor(named: "YP Black")
             
-            // Стиль для неактивных иконок
-            appearance.stackedLayoutAppearance.normal.iconColor = UIColor(named: "YP White")
+            appearance.stackedLayoutAppearance.normal.iconColor = UIColor(named: "YP Gray")
             
-            // Стиль для активной иконки
             appearance.stackedLayoutAppearance.selected.iconColor = UIColor(named: "YP White")
             
-            // Применяем настройки
             tabBar.standardAppearance = appearance
             tabBar.scrollEdgeAppearance = appearance
         } else {
-            // Для версий iOS ниже 15
             tabBar.barTintColor = UIColor(named: "YP Black")
             tabBar.tintColor = UIColor(named: "YP White")
-            tabBar.unselectedItemTintColor = UIColor(named: "YP White")
+            tabBar.unselectedItemTintColor = UIColor(named: "YP Gray")
         }
-        
-        // Дополнительные настройки
-        tabBar.isTranslucent = false
-        tabBar.layer.borderWidth = 0.5
-        tabBar.layer.borderColor = UIColor(named: "YP Black")?.cgColor
-        tabBar.clipsToBounds = true
         
         tabBar.removeConstraints(tabBar.constraints)
         
-        // Устанавливаем новую высоту
         let height: CGFloat = 83
         tabBar.heightAnchor.constraint(equalToConstant: height).isActive = true
         tabBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
@@ -88,7 +73,7 @@ final class TabBarController: UITabBarController {
     
     private func adjustTabBarItems() {
         
-            let verticalOffset: CGFloat = 55 // На сколько опускаем иконки
+            let verticalOffset: CGFloat = 10
         tabBar.items?.forEach {
             $0.imageInsets = UIEdgeInsets(
                 top: verticalOffset,
@@ -98,18 +83,16 @@ final class TabBarController: UITabBarController {
             )
         }
         let tabItem = UIView()
-        tabItem.backgroundColor = .systemBlue // Цвет для наглядности
-        tabItem.translatesAutoresizingMaskIntoConstraints = false // Отключаем авто-констрейнты
+        tabItem.translatesAutoresizingMaskIntoConstraints = false
         let activeTabItem = UIView()
                 activeTabItem.backgroundColor = .systemBlue
                 tabItem.addSubview(activeTabItem)
         activeTabItem.translatesAutoresizingMaskIntoConstraints = false
-        // Обозначаем констрейнты:
         NSLayoutConstraint.activate([
                         activeTabItem.widthAnchor.constraint(equalToConstant: 30),
                         activeTabItem.heightAnchor.constraint(equalToConstant: 30),
-                        activeTabItem.topAnchor.constraint(equalTo: tabItem.topAnchor, constant: 10),
-                        activeTabItem.leadingAnchor.constraint(equalTo: tabItem.leadingAnchor, constant: 22)
+                        activeTabItem.topAnchor.constraint(equalTo: tabItem.topAnchor, constant: 14),
+                        activeTabItem.leadingAnchor.constraint(equalTo: tabItem.leadingAnchor, constant: 83)
                 ])
         }
     }

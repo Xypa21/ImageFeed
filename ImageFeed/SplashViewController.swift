@@ -86,7 +86,7 @@ final class SplashViewController: UIViewController {
             return
         }
         
-        let tabBarVC = TabBarController()
+        let tabBarVC = TabBarController(nibName: nil, bundle: nil)
         UIView.transition(
             with: window,
             duration: 0.3,
@@ -95,7 +95,7 @@ final class SplashViewController: UIViewController {
                 window.rootViewController = tabBarVC
             },
             completion: { _ in
-                print("Переход завершен. Текущий контроллер: \(window.rootViewController)")
+                print("Переход завершен. Текущий контроллер: \(String(describing: window.rootViewController))")
                 window.makeKeyAndVisible()
             }
         )
