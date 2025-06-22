@@ -15,6 +15,9 @@ enum NetworkError: Error {
     case decodingError(Error)
     case httpResponseError
     case dataError
+    case invalidResponseError
+    case noData
+    case requestInProgress
 }
 
 
@@ -24,6 +27,12 @@ extension URLSession {
         completion: @escaping (Result<Data, Error>) -> Void
     ) -> URLSessionTask {
         let fulfillCompletionOnTheMainThread: (Result<Data, Error>) -> Void = { result in
+            switch result {
+            case .failure(let error):
+                print("[dataTask]: \(error.localizedDescription) - URL: \(request.url?.absoluteString ?? "")")
+            default:
+                break
+            }
             DispatchQueue.main.async {
                 completion(result)
             }
@@ -34,53 +43,40 @@ extension URLSession {
                 if 200 ..< 300 ~= statusCode {
                     fulfillCompletionOnTheMainThread(.success(data))
                 } else {
-                    fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
+                    let error = NetworkError.httpStatusCode(statusCode)
+                    print("[dataTask]: NetworkError - код ошибки \(statusCode), URL: \(request.url?.absoluteString ?? "")")
+                    fulfillCompletionOnTheMainThread(.failure(error))
                 }
             } else if let error = error {
+                print("[dataTask]: URLRequestError - \(error.localizedDescription), URL: \(request.url?.absoluteString ?? "")")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
             } else {
-                fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
+                let error = NetworkError.urlSessionError
+                print("[dataTask]: URLSessionError - неизвестная ошибка сессии, URL: \(request.url?.absoluteString ?? "")")
+                fulfillCompletionOnTheMainThread(.failure(error))
             }
         })
         
         return task
     }
-}
-
-
-extension URLSession {
+    
     func objectTask<T: Decodable>(
         for request: URLRequest,
         completion: @escaping (Result<T, Error>) -> Void
     ) -> URLSessionTask {
         let task = data(for: request) { (result: Result<Data, Error>) in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let data):
-                    let decoder = JSONDecoder()
-                    decoder.keyDecodingStrategy = .convertFromSnakeCase
-                    
-                    do {
-                        let decodedObject = try decoder.decode(T.self, from: data)
-                        completion(.success(decodedObject))
-                    } catch let decodingError {
-                        print("[Decoding Error] Type: \(T.self)")
-                        print("[Decoding Error] Description: \(decodingError.localizedDescription)")
-                        print("[Decoding Error] Raw data: \(String(data: data, encoding: .utf8) ?? "Unable to convert data to string")")
-                        
-                        completion(.failure(NetworkError.decodingError(decodingError)))
-                    }
-                    
-                case .failure(let error):
-                    print("[Network Error] Request: \(request.httpMethod ?? "") \(request.url?.absoluteString ?? "")")
-                    print("[Network Error] Description: \(error.localizedDescription)")
-                    
-                    if let urlError = error as? URLError {
-                        print("[Network Error] URL Error Code: \(urlError.errorCode)")
-                        print("[Network Error] Failing URL: \(urlError.failingURL?.absoluteString ?? "nil")")
-                    }
-                    completion(.failure(error))
+            switch result {
+            case .success(let data):
+                do {
+                    let decodedObject = try JSONDecoder().decode(T.self, from: data)
+                    completion(.success(decodedObject))
+                } catch {
+                    let dataString = String(data: data, encoding: .utf8) ?? "нечитаемые данные"
+                    print("[objectTask]: DecodingError - \(error.localizedDescription), Data: \(dataString)")
+                    completion(.failure(NetworkError.decodingError(error)))
                 }
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
         return task

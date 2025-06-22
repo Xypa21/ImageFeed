@@ -6,58 +6,39 @@
 //
 
 import Foundation
+import SwiftKeychainWrapper
 
 final class ProfileImageService {
-    // MARK: - Singleton
     static let shared = ProfileImageService()
     private init() {}
-    static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
-        
-    // MARK: - Properties
-    private(set) var avatarURL: String?
-    private var task: URLSessionTask?
+    
     private let urlSession = URLSession.shared
+    private var task: URLSessionTask?
+    private(set) var avatarURL: String?
     
-    // MARK: - Structs
-    struct UserResult: Codable {
-        let profileImage: ProfileImage
-        
-        enum CodingKeys: String, CodingKey {
-            case profileImage = "profile_image"
-        }
-    }
-    
-    struct ProfileImage: Codable {
-        let small: String
-    }
-    
-    // MARK: - Methods
-    func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
+    func fetchProfileImageURL(username: String, completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
+        
         task?.cancel()
         
-        guard let request = makeProfileImageRequest(username: username) else {
+        guard let request = makeRequest(username: username) else {
             completion(.failure(NetworkError.invalidRequest))
             return
         }
         
-        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<UserResult, Error>) in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                
-                switch result {
-                case .success(let userResult):
-                    let avatarURL = userResult.profileImage.small
-                    self.avatarURL = avatarURL
-                    completion(.success(avatarURL))
-                    NotificationCenter.default.post(
-                        name: ProfileImageService.didChangeNotification,
-                        object: self,
-                        userInfo: ["URL": avatarURL])
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-                    self.task = nil
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<ProfileImage, Error>) in
+                DispatchQueue.main.async {
+                    guard let self = self else { return }
+                    
+                    switch result {
+                    case .success(let profileImage):
+                        self.avatarURL = profileImage.profileImage.large
+                        completion(.success(profileImage.profileImage.large))
+                        self.notifyObserver()
+                    case .failure(let error):
+                        print("[ProfileImageService]: ImageError - \(error.localizedDescription), Username: \(username)")
+                        completion(.failure(error))
+                    }
                 }
             }
         
@@ -65,20 +46,42 @@ final class ProfileImageService {
         task.resume()
     }
     
-    // MARK: - Private
-    private func makeProfileImageRequest(username: String) -> URLRequest? {
-        guard let token = OAuth2TokenStorage().token else {
-            return nil
-        }
-        
-        let urlString = "https://api.unsplash.com/users/\(username)"
-        guard let url = URL(string: urlString) else {
+    private func makeRequest(username: String) -> URLRequest? {
+        guard let url = URL(string: "https://api.unsplash.com/users/\(username)") else {
+            assertionFailure("Failed to create URL")
             return nil
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if let token = KeychainWrapper.standard.string(forKey: Constants.KeychainKeys.authToken)
+        {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         return request
+    }
+    
+    private func notifyObserver() {
+        NotificationCenter.default.post(
+            name: Notification.Name(Constants.NotificationNames.profileImageDidChange),
+            object: self
+        )
+    }
+}
+
+struct ProfileImage: Codable {
+    let profileImage: ProfileImageURLs
+    
+    enum CodingKeys: String, CodingKey {
+        case profileImage = "profile_image"
+    }
+}
+
+struct ProfileImageURLs: Codable {
+    let large: String
+}
+
+extension ProfileImageService {
+    static var didChangeNotification: Notification.Name {
+        return Notification.Name(Constants.NotificationNames.profileImageDidChange)
     }
 }

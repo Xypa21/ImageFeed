@@ -12,12 +12,13 @@ import WebKit
 
 final class ProfileViewController: UIViewController {
     
-    private var profileImageServiceObserver: NSObjectProtocol?
-    private let profileService = ProfileService.shared
-    private let profileImageService = ProfileImageService.shared
     
+    private var profileImageServiceObserver: NSObjectProtocol?
+    
+    private let logoutImage = UIImage (named: "NoAvatar")
     private let profileImageView: UIImageView = {
         let imageView = UIImageView()
+        imageView.image = UIImage(named: "Avatar") ?? UIImage(systemName: "person.crop.circle")
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.layer.cornerRadius = 35
         imageView.clipsToBounds = true
@@ -71,28 +72,40 @@ final class ProfileViewController: UIViewController {
         view.backgroundColor = UIColor(named: "YP Black")
         setupSubviews()
         setupConstraints()
-        addObserver()
-        updateAvatar()
         updateProfileDetails()
-    }
-    
-    private func addObserver() {
         profileImageServiceObserver = NotificationCenter.default.addObserver(
             forName: ProfileImageService.didChangeNotification,
             object: nil,
-            queue: .main) { [weak self] _ in
-                guard let self = self else { return }
-                self.updateAvatar()
-            }
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.updateAvatar()
+        }
+        updateAvatar()
+    }
+    
+    private func updateProfileDetails() {
+        guard let profile = ProfileService.shared.profile else { return }
+        
+        nameLabel.text = profile.name
+        loginLabel.text = profile.loginName
+        bioLabel.text = profile.bio
+        
+        ProfileImageService.shared.fetchProfileImageURL(username: profile.username) { [weak self] _ in
+            self?.updateAvatar()
+        }
     }
     
     private func updateAvatar() {
-        guard
-            let profileImageURL = profileImageService.avatarURL,
-            let url = URL(string: profileImageURL)
-        else {
-            return
-        }
+        guard let avatarURL = ProfileImageService.shared.avatarURL,
+              let url = URL(string: avatarURL) else { return }
+        
+        let processor = RoundCornerImageProcessor(cornerRadius: 35)
+        profileImageView.kf.setImage(
+            with: url,
+            placeholder: UIImage(named: "Avatar"),
+            options: [.processor(processor)]
+        )
     }
     
     private func setupSubviews() {
@@ -124,38 +137,13 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
-    private func updateProfileDetails() {
-        guard let profile = profileService.profile else {
-            return
-        }
-        nameLabel.text = profile.name
-        loginLabel.text = profile.loginName
-        bioLabel.text = profile.bio
-        if let username = profileService.profile?.username {
-            profileImageService.fetchProfileImageURL(username: username) { _ in }
-        }
-    }
-    
-    
-    
     @objc
     private func didTapLogoutButton() {
-        performLogout()
-    }
-    
-    private func performLogout() {
-        OAuth2TokenStorage().token = nil
-        guard let window = UIApplication.shared.windows.first else {
-            fatalError("Invalid configuration")
-        }
-        
-        let storyboard = UIStoryboard(name: "Main", bundle: .main)
-        window.rootViewController = storyboard.instantiateInitialViewController()
-    }
-    
-    deinit {
-        if let observer = profileImageServiceObserver {
-            NotificationCenter.default.removeObserver(observer)
+        profileImageView.image = logoutImage
+        for view in view.subviews {
+            if view is UILabel {
+                view.removeFromSuperview()
+            }
         }
     }
 }

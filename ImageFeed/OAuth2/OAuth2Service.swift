@@ -1,54 +1,59 @@
-//
-//  OAuth2Service.swift
-//  ImageFeed
-//
-//  Created by Сёма Шибаев on 16.06.2025.
-//
-
 import Foundation
-
-enum AuthServiceError: Error {
-    case invalidRequest
-    case requestInProgress
-}
-
+import SwiftKeychainWrapper
 
 final class OAuth2Service {
     static let shared = OAuth2Service()
-
-    private let dataStorage = OAuth2TokenStorage()
+    
     private let urlSession = URLSession.shared
-
+    private var currentTask: URLSessionTask?
+    private var lastCode: String?
+    
     private (set) var authToken: String? {
         get {
-            return dataStorage.token
+            return KeychainWrapper.standard.string(forKey: Constants.KeychainKeys.authToken)
         }
         set {
-            dataStorage.token = newValue
+            if let newValue = newValue {
+                KeychainWrapper.standard.set(newValue, forKey: Constants.KeychainKeys.authToken)
+            } else {
+                KeychainWrapper.standard.removeObject(forKey: Constants.KeychainKeys.authToken)
+            }
         }
     }
 
-    private init() { }
-
     func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
-        guard
-            let request = makeOAuthTokenRequest(code: code)
-        else {
-            completion(.failure(NetworkError.invalidRequest))
+        assert(Thread.isMainThread)
+        
+        if lastCode == code {
+            completion(.failure(NetworkError.requestInProgress))
             return
         }
         
-        let task = object(for: request) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let body):
-                let authToken = body.accessToken
-                self.authToken = authToken
-                completion(.success(authToken))
-            case .failure(let error):
-                completion(.failure(error))
+        lastCode = code
+        currentTask?.cancel()
+        
+        guard let request = makeOAuthTokenRequest(code: code) else {
+            completion(.failure(NetworkError.invalidRequest))
+            lastCode = nil
+            return
+        }
+        
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.lastCode = nil
+                
+                switch result {
+                case .success(let body):
+                    let authToken = body.accessToken
+                    self.authToken = authToken
+                    completion(.success(authToken))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
             }
         }
+        self.currentTask = task
         task.resume()
     }
 
